@@ -132,13 +132,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
-    <ClCompile Include="Game.cpp" />
     <ClCompile Include="ItemButton.cpp" />
     <ClCompile Include="RecycleMe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.h" />
-    <ClInclude Include="Game.h" />
     <ClInclude Include="ItemButton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

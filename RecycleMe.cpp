@@ -2,7 +2,6 @@
 #include <string>
 #include "Button.h"
 #include "ItemButton.h"	
-#include "Game.h"
 #include <stdexcept>
 
 #include <SFML/Graphics.hpp>
@@ -204,10 +203,6 @@ int main() {
 	loadTexture(cocaColaCanTexture, "Sprites/RecycleMe_Can_CocaCola.png");
 	ItemButton cocaColaCanButton(cocaColaCanTexture, 800.0f, 300.0f, false, true, BIN::ALUMINUM, ACTION::NONE);
 
-
-	// Game Object
-	Game gameObject;
-
 	// Main Game Loop
 	while (window->isOpen()) 
 	{
@@ -250,7 +245,6 @@ int main() {
 			plasticBinButton.updateTexture((*window));
 			glassBinButton.updateTexture((*window));
 			cardboardBinButton.updateTexture((*window));
-			gameObject.getCurrentButton().updateTexture((*window));
 
 
 			//Draw Sprites
@@ -262,7 +256,6 @@ int main() {
 			window->draw(trashBinButton.getSprite());
 			window->draw(glassBinButton.getSprite());
 			window->draw(cardboardBinButton.getSprite());
-			window->draw(gameObject.getCurrentButton().getSprite());
 
 			//Drawing
 			window->display();
