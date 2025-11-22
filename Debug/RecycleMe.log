@@ -1,0 +1,9 @@
+﻿  ItemButton.cpp
+C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,47): warning C4275: non dll-interface class 'std::runtime_error' used as base for dll-interface class 'sf::Exception'
+  (compiling source file 'ItemButton.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      see declaration of 'std::runtime_error'
+      C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,23):
+      see declaration of 'sf::Exception'
+  
+  RecycleMe.vcxproj -> C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\Debug\RecycleMe.exe
