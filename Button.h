@@ -14,24 +14,20 @@ class Button
 		sf::Sprite* sprite;
 		sf::Texture idleTexture;
 		sf::Texture hoverTexture;
-		//sf::Texture textPressed;
 		int buttonState;
 		static int buttonID;
 		int currButtonID;
+		float xPos; 
+		float yPos;
 
 	public:
-		Button();
 		Button(sf::Texture& Texture, float x, float y);
 		Button(sf::Texture& idleTexture, sf::Texture& hoverTexture, float x, float y);
 		~Button();
-		//bool is_pressed() const;
-		//bool is_hover() const;
-		//void drawButton();
+
 		void pickTexture();
 
-		//Fix, pass position instead of mouse click
 		void updateTexture(const sf::RenderWindow& window);
-		//void render(sf::RenderTarget& target);
 		
 		sf::Sprite getSprite() 
 		{
@@ -51,6 +47,10 @@ class Button
 		{
 			buttonState = state;
 		}
+
+		void setButtonPosition(float x, float y);
+
+		Button(const Button& otherButton);
 };
 
 

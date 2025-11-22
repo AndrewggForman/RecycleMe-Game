@@ -131,12 +131,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ActionButton.cpp" />
+    <ClCompile Include="BinButton.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="GameButton.cpp" />
     <ClCompile Include="ItemButton.cpp" />
     <ClCompile Include="RecycleMe.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActionButton.h" />
+    <ClInclude Include="BinButton.h" />
     <ClInclude Include="Button.h" />
+    <ClInclude Include="GameButton.h" />
     <ClInclude Include="ItemButton.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

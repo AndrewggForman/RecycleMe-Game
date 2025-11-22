@@ -3,31 +3,20 @@
 #define ITEM_BUTTON
 
 #include "Button.h"
-enum BIN {TRASH = 0, PLASTIC = 1, CARDBOARD = 2, GLASS = 3, ALUMINUM = 4};
-enum ACTION {CLEAN = 0, REMOVE_CAP = 1, FLATTEN = 2, PEEL_LABEL = 3, EMPTY = 4, NONE = 5};
+enum BIN {TRASH = 0, PLASTIC = 1, CARDBOARD = 2, GLASS = 3, NO_BIN = 4};
+enum ACTION {CLEAN = 0, FLATTEN = 1, PEEL_LABEL = 2, EMPTY = 3, NO_ACTION = 4};
 
 class ItemButton : public Button 
 {
 	private:
-		bool needsAction;
-		bool readyToBin;
 		int binType;
 		int actionType;
 
 	public:
-		ItemButton();
-		ItemButton(sf::Texture& texture, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType);
-		ItemButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType);
+		ItemButton(sf::Texture& texture, float x, float y, int binType, int actionType);
+		ItemButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, int binType, int actionType);
 		~ItemButton(); 
 
-		void setNeedsAction(bool actionStatus)
-		{
-			this->needsAction = actionStatus;
-		}
-		void setReadyToBin(bool binStatus)
-		{
-			this->readyToBin = binStatus;
-		}
 		void setBinType(int binType) 
 		{
 			this->binType = binType;
@@ -37,14 +26,6 @@ class ItemButton : public Button
 			this->actionType = actionType;
 		}
 
-		bool getNeedsAction() 
-		{
-			return needsAction;
-		}
-		bool getReadyToBin()
-		{
-			return readyToBin;
-		}
 		int getBinType() 
 		{
 			return binType;
@@ -53,7 +34,8 @@ class ItemButton : public Button
 		{
 			return actionType;
 		}
-		int getThisButtonID() {
+		int getThisButtonID() 
+		{
 			return this->getCurrButtonID();
 		}
 		bool operator==(ItemButton& gameItem);

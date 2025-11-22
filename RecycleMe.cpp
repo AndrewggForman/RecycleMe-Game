@@ -2,9 +2,21 @@
 #include <string>
 #include "Button.h"
 #include "ItemButton.h"	
+#include "GameButton.h"
+#include "ActionButton.h"
+#include "BinButton.h"
 #include <stdexcept>
 
+#include <time.h>
+// For rand
+#include <stdlib.h>
+
+
+
 #include <SFML/Graphics.hpp>
+
+const int MENU_ITEMS_COUNT = 4;
+const int GAME_ITEMS_COUNT = 3;
 
 enum BUTTON_STATE { IDLE = 0, HOVER = 1, PRESSED = 2 };
 unsigned int width = 1600;
@@ -14,6 +26,30 @@ unsigned int currentGameState = GAME_STATE::MAIN_MENU;
 
 const float ACTIONBUTTONWIDTH = 250.0f;
 const float ACTIONBUTTONHEIGHT = 200.0f;
+enum GAME_ITEMS {PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2};
+int CURRENT_GAME_ITEM = 0;
+bool needNewGameItem = true;
+
+bool isActionButton(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
+{
+	for (int i = 0; i < MENU_ITEMS_COUNT; i++) {
+		if (actionButtons[i]->getSprite().getGlobalBounds().contains(mousePosView))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) {
+	for (int i = 0; i < MENU_ITEMS_COUNT; i++) {
+		if (binButtons[i]->getSprite().getGlobalBounds().contains(mousePosView))
+		{
+			return true;
+		}
+		return false;
+	}
+}
 
 
 void loadTexture(sf::Texture& texture, std::string filepath)
@@ -81,7 +117,46 @@ void pollEvents(sf::RenderWindow& window, sf::Vector2f mousePosView)
 	}
 }
 
+void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, ActionButton *actionButtons[4], BinButton *binButtons[4])
+{
+	while (const std::optional event = window.pollEvent())
+	{
+		if (event->is<sf::Event::Closed>())
+		{
+			window.close();
+		}
+		else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
+			{
+				window.close();
+			}
+			if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
+				currentGameState = GAME_STATE::MAIN_MENU;
+			}
+		}
+		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+		{
+			if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons))
+			{
+				std::cout << "MEOW" << std::endl;
+			}
+			if ((mousePressed->button == sf::Mouse::Button::Left) && isBinButton(mousePosView, binButtons))
+			{
+				std::cout << "WOOF" << std::endl;
+			}
+		}
+	}
+}
+
+
+
 int main() {
+	srand(time(NULL));
+	int randNum = rand() % 3;
+	std::cout << randNum << std::endl;
+
+
 	std::cout << "Start of program" << std::endl;
 	// Main Window
 	sf::Vector2u windowSize = { width, height };
@@ -131,8 +206,10 @@ int main() {
 	loadTexture(cleanItemIdleTexture, "Sprites/RecycleMe_Button_CleanItem_Idle.png");
 	loadTexture(cleanItemHoverTexture, "Sprites/RecycleMe_Button_CleanItem_Hover.png");
 
-	Button cleanItemButton(cleanItemIdleTexture, cleanItemHoverTexture,
-		width - (1.5f * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT));
+	ActionButton cleanItemButton(cleanItemIdleTexture, cleanItemHoverTexture,
+		width - (1.5f * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT), ACTION::CLEAN);
+	
+	ActionButton* ptrActionClean = &cleanItemButton;
 
 	// Flatten Item Button
 	sf::Texture flattenItemIdleTexture;
@@ -140,8 +217,10 @@ int main() {
 	loadTexture(flattenItemIdleTexture, "Sprites/RecycleMe_Button_FlattenItem_Idle.png");
 	loadTexture(flattenItemHoverTexture, "Sprites/RecycleMe_Button_FlattenItem_Hover.png");
 
-	Button flattenItemButton(flattenItemIdleTexture, flattenItemHoverTexture,
-		width - (0.5f * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT));
+	ActionButton flattenItemButton(flattenItemIdleTexture, flattenItemHoverTexture,
+		width - (0.5f * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT), ACTION::FLATTEN);
+
+	ActionButton* ptrActionFlatten = &flattenItemButton;
 
 	// Empty Item Button
 	sf::Texture emptyItemIdleTexture;
@@ -149,8 +228,10 @@ int main() {
 	loadTexture(emptyItemIdleTexture, "Sprites/RecycleMe_Button_EmptyItem_Idle.png");
 	loadTexture(emptyItemHoverTexture, "Sprites/RecycleMe_Button_EmptyItem_Hover.png");
 
-	Button emptyItemButton(emptyItemIdleTexture, emptyItemHoverTexture,
-		width - (1.5f * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT));
+	ActionButton emptyItemButton(emptyItemIdleTexture, emptyItemHoverTexture,
+		width - (1.5f * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT), ACTION::EMPTY);
+
+	ActionButton* ptrActionEmpty = &emptyItemButton;
 
 	// Peel Sticker Item Button
 	sf::Texture peelStickerItemIdleTexture;
@@ -158,8 +239,14 @@ int main() {
 	loadTexture(peelStickerItemIdleTexture, "Sprites/RecycleMe_Button_PeelStickerItem_Idle.png");
 	loadTexture(peelStickerItemHoverTexture, "Sprites/RecycleMe_Button_PeelStickerItem_Hover.png");
 
-	Button peelStickerItemButton(peelStickerItemIdleTexture, peelStickerItemHoverTexture,
-		width - (0.5f * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT));
+	ActionButton peelStickerItemButton(peelStickerItemIdleTexture, peelStickerItemHoverTexture,
+		width - (0.5f * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT), ACTION::PEEL_LABEL);
+
+	ActionButton* ptrActionPeel = &peelStickerItemButton;
+
+	// Array of Action Buttons
+	ActionButton *actionButtons[] = { ptrActionClean, ptrActionFlatten, ptrActionPeel, ptrActionEmpty };
+
 
 	// Bin Buttons
 	// Trash Bin Button
@@ -168,8 +255,10 @@ int main() {
 	loadTexture(trashBinIdleTexture, "Sprites/RecycleMe_Button_TrashBin_Idle.png");
 	loadTexture(trashBinHoverTexture, "Sprites/RecycleMe_Button_TrashBin_Hover.png");
 
-	Button trashBinButton(trashBinIdleTexture, trashBinHoverTexture,
-		(0.5 * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT));
+	BinButton trashBinButton(trashBinIdleTexture, trashBinHoverTexture,
+		(0.5 * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT), BIN::TRASH);
+
+	BinButton* ptrBinTrash = &trashBinButton;
 
 	//Plastic Bin Button
 	sf::Texture plasticBinIdleTexture;
@@ -177,8 +266,10 @@ int main() {
 	loadTexture(plasticBinIdleTexture, "Sprites/RecycleMe_Button_PlasticBin_Idle.png");
 	loadTexture(plasticBinHoverTexture, "Sprites/RecycleMe_Button_PlasticBin_Hover.png");
 
-	Button plasticBinButton(plasticBinIdleTexture, plasticBinHoverTexture,
-		(1.5 * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT));
+	BinButton plasticBinButton(plasticBinIdleTexture, plasticBinHoverTexture,
+		(1.5 * ACTIONBUTTONWIDTH), height - (1.5f * ACTIONBUTTONHEIGHT), BIN::PLASTIC);
+
+	BinButton* ptrBinPlastic = &plasticBinButton;
 
 	// Glass Bin Button
 	sf::Texture glassBinIdleTexture;
@@ -186,8 +277,10 @@ int main() {
 	loadTexture(glassBinIdleTexture, "Sprites/RecycleMe_Button_GlassBin_Idle.png");
 	loadTexture(glassBinHoverTexture, "Sprites/RecycleMe_Button_GlassBin_Hover.png");
 
-	Button glassBinButton(glassBinIdleTexture, glassBinHoverTexture,
-		(0.5 * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT));
+	BinButton glassBinButton(glassBinIdleTexture, glassBinHoverTexture,
+		(0.5 * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT), BIN::GLASS);
+
+	BinButton* ptrBinGlass = &glassBinButton;
 
 	// Cardboard Bin
 	sf::Texture cardboardBinIdleTexture;
@@ -195,13 +288,39 @@ int main() {
 	loadTexture(cardboardBinIdleTexture, "Sprites/RecycleMe_Button_CardboardBin_Idle.png");
 	loadTexture(cardboardBinHoverTexture, "Sprites/RecycleMe_Button_CardboardBin_Hover.png");
 
-	Button cardboardBinButton(cardboardBinIdleTexture, cardboardBinHoverTexture,
-		(1.5 * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT));
+	BinButton cardboardBinButton(cardboardBinIdleTexture, cardboardBinHoverTexture,
+		(1.5 * ACTIONBUTTONWIDTH), height - (0.5f * ACTIONBUTTONHEIGHT), BIN::CARDBOARD);
 
-	// Coca-Cola Can Button
-	sf::Texture cocaColaCanTexture;
-	loadTexture(cocaColaCanTexture, "Sprites/RecycleMe_Can_CocaCola.png");
-	ItemButton cocaColaCanButton(cocaColaCanTexture, 800.0f, 300.0f, false, true, BIN::ALUMINUM, ACTION::NONE);
+	BinButton* ptrBinCardboard = &cardboardBinButton;
+
+	BinButton* binButtons[] = { ptrBinTrash, ptrBinPlastic, ptrBinCardboard, ptrBinGlass };
+
+	// Game Object Buttons
+	// Plastic Cola Button
+	sf::Texture plasticColaIdleTexture;
+	sf::Texture plasticColaHoverTexture;
+	loadTexture(plasticColaIdleTexture, "Sprites/RecycleMe_Plastic_CocaCola_HalfEmpty.png");
+	loadTexture(plasticColaHoverTexture, "Sprites/RecycleMe_Plastic_CocaCola_Empty.png");
+
+	GameButton plasticColaButton(plasticColaIdleTexture, plasticColaHoverTexture, 800.0f, 300.0f, true, false, BIN::PLASTIC, ACTION::EMPTY);
+
+	// Fragile Cardboard Box Button
+	sf::Texture fragileCardboardBoxIdleTexture;
+	sf::Texture fragileCardboardBoxHoverTexture;
+	loadTexture(fragileCardboardBoxIdleTexture, "Sprites/RecycleMe_Cardboard_Fragile_Unfolded.png");
+	loadTexture(fragileCardboardBoxHoverTexture, "Sprites/RecycleMe_Cardboard_Fragile_Folded.png");
+
+	GameButton fragileCardboardBoxButton(fragileCardboardBoxIdleTexture, fragileCardboardBoxHoverTexture, 800.0f, 300.0f, true, false, BIN::PLASTIC, ACTION::EMPTY);
+
+	// Dominos Pizza Button
+	sf::Texture dominosPizzaBoxIdleTexture;
+	loadTexture(dominosPizzaBoxIdleTexture, "Sprites/RecycleMe_Trash_Dominos.png");
+
+	GameButton dominosPizzaBoxButton(dominosPizzaBoxIdleTexture, 800.0f, 300.0f, false, true, BIN::PLASTIC, ACTION::EMPTY);
+
+	Button gameObjects[] = { plasticColaButton, fragileCardboardBoxButton, dominosPizzaBoxButton };
+	gameObjects[PLASTIC_COLA].setButtonPosition(800.0f, 400.0f);
+
 
 	// Main Game Loop
 	while (window->isOpen()) 
@@ -233,29 +352,23 @@ int main() {
 		else if (currentGameState == GAME_STATE::IN_GAME)
 		{
 			
-			pollEvents(*window, mousePosView);
+			//pollEvents(*window, mousePosView);
+			pollGameEvents(*window, mousePosView, actionButtons, binButtons);
+
+			// Render And Draw Menu Options
+			window->clear();
+			for (int i = 0; i < 4; i++) {
+				actionButtons[i]->updateTexture((*window));
+				binButtons[i]->updateTexture((*window));
+				window->draw(actionButtons[i]->getSprite());
+				window->draw(binButtons[i]->getSprite());
+			}
 
 			// Render
-			window->clear();
-			flattenItemButton.updateTexture((*window));
-			cleanItemButton.updateTexture((*window));
-			emptyItemButton.updateTexture((*window));
-			peelStickerItemButton.updateTexture((*window));
-			trashBinButton.updateTexture((*window));
-			plasticBinButton.updateTexture((*window));
-			glassBinButton.updateTexture((*window));
-			cardboardBinButton.updateTexture((*window));
+			gameObjects[PLASTIC_COLA].updateTexture((*window));
 
-
-			//Draw Sprites
-			window->draw(flattenItemButton.getSprite());
-			window->draw(cleanItemButton.getSprite());
-			window->draw(emptyItemButton.getSprite());
-			window->draw(peelStickerItemButton.getSprite());
-			window->draw(plasticBinButton.getSprite());
-			window->draw(trashBinButton.getSprite());
-			window->draw(glassBinButton.getSprite());
-			window->draw(cardboardBinButton.getSprite());
+			// Draw 
+			window->draw(gameObjects[PLASTIC_COLA].getSprite());
 
 			//Drawing
 			window->display();
