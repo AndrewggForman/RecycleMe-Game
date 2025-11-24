@@ -7,6 +7,8 @@
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 
+enum BIN { TRASH = 0, PLASTIC = 1, CARDBOARD = 2, GLASS = 3, NO_BIN = 4 };
+enum ACTION { CLEAN = 0, FLATTEN = 1, PEEL_LABEL = 2, EMPTY = 3, NO_ACTION = 4 };
 
 class Button 
 {

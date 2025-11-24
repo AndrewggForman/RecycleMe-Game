@@ -21,7 +21,7 @@
     <ClCompile Include="Button.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ItemButton.cpp">
+    <ClCompile Include="Hearts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GameButton.cpp">
@@ -38,7 +38,7 @@
     <ClInclude Include="Button.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ItemButton.h">
+    <ClInclude Include="Hearts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameButton.h">

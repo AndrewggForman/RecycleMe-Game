@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include "Button.h"
-#include "ItemButton.h"	
+//#include "ItemButton.h"	
 #include "GameButton.h"
 #include "ActionButton.h"
 #include "BinButton.h"
@@ -14,6 +14,7 @@
 
 
 #include <SFML/Graphics.hpp>
+int PLAYER_LIVES = 3;
 
 const int MENU_ITEMS_COUNT = 4;
 const int GAME_ITEMS_COUNT = 3;
@@ -47,8 +48,8 @@ bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) {
 		{
 			return true;
 		}
-		return false;
 	}
+	return false;
 }
 
 
