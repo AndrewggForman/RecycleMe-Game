@@ -1,40 +1,44 @@
-#include <iostream>
-#include <string>
+// Homemade Game Related Classes
 #include "Button.h"
-//#include "ItemButton.h"	
+#include "Hearts.h"	
 #include "GameButton.h"
 #include "ActionButton.h"
 #include "BinButton.h"
-#include <stdexcept>
 
+// Standard Library Stuff, Errors, Input/output, strings, time/random functionality
+#include <iostream>
+#include <string>
+#include <stdexcept>
 #include <time.h>
-// For rand
 #include <stdlib.h>
 
-
-
+// SFML Graphics Library
 #include <SFML/Graphics.hpp>
-int PLAYER_LIVES = 3;
 
 const int MENU_ITEMS_COUNT = 4;
 const int GAME_ITEMS_COUNT = 3;
-
-enum BUTTON_STATE { IDLE = 0, HOVER = 1, PRESSED = 2 };
-unsigned int width = 1600;
-unsigned int height = 900;
-enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2 };
-unsigned int currentGameState = GAME_STATE::MAIN_MENU;
-
 const float ACTIONBUTTONWIDTH = 250.0f;
 const float ACTIONBUTTONHEIGHT = 200.0f;
-enum GAME_ITEMS {PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2};
+unsigned int width = 1600;
+unsigned int height = 900;
+
+enum BUTTON_STATE { IDLE = 0, HOVER = 1, PRESSED = 2 };
+enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2 };
+enum GAME_ITEMS { PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2 };
+
+
+unsigned int currentGameState = GAME_STATE::MAIN_MENU;
+
 int CURRENT_GAME_ITEM = 0;
 bool needNewGameItem = true;
+
+
+int randomRecyclable = rand() % 3;
 
 bool isActionButton(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
 {
 	for (int i = 0; i < MENU_ITEMS_COUNT; i++) {
-		if (actionButtons[i]->getSprite().getGlobalBounds().contains(mousePosView))
+		if (actionButtons[i]->getSprite()->getGlobalBounds().contains(mousePosView))
 		{
 			return true;
 		}
@@ -44,7 +48,7 @@ bool isActionButton(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
 
 bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) {
 	for (int i = 0; i < MENU_ITEMS_COUNT; i++) {
-		if (binButtons[i]->getSprite().getGlobalBounds().contains(mousePosView))
+		if (binButtons[i]->getSprite()->getGlobalBounds().contains(mousePosView))
 		{
 			return true;
 		}
@@ -52,7 +56,14 @@ bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) {
 	return false;
 }
 
+// Helper function for when the player loses OR the player completes a proper recycle of an object
+void resetGameButton(GameButton& gameButton)
+{
+	gameButton.setButtonState(BUTTON_STATE::IDLE);
+	gameButton.pickTexture();
+}
 
+// Loads a imagae onto a texture object, throws error if fails
 void loadTexture(sf::Texture& texture, std::string filepath)
 {
 	if (!texture.loadFromFile(filepath)) {
@@ -61,6 +72,7 @@ void loadTexture(sf::Texture& texture, std::string filepath)
 	}
 }
 
+// Positions gamesprite based on GAME WINDOWS position (as opposed to user's screen)
 void positionGameSprite(sf::Sprite& sprite, float x, float y)
 {
 	sprite.setOrigin({ sprite.getLocalBounds().size.x / 2.0f, sprite.getLocalBounds().size.y / 2.0f });
@@ -68,6 +80,8 @@ void positionGameSprite(sf::Sprite& sprite, float x, float y)
 }
 
 
+// POLL EVENTS SECTION
+// HANDLES USER INTERACTION WITH GAME (for the most part)
 void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGameButton, sf::Vector2f mousePosView) 
 {
 	while (const std::optional event = window.pollEvent()) 
@@ -85,11 +99,11 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 		}
 		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{
-			if ((mousePressed->button == sf::Mouse::Button::Left) && exitGameButton.getSprite().getGlobalBounds().contains(mousePosView))
+			if ((mousePressed->button == sf::Mouse::Button::Left) && exitGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
 				window.close();
 			}
-			if ((mousePressed->button == sf::Mouse::Button::Left) && newGameButton.getSprite().getGlobalBounds().contains(mousePosView))
+			if ((mousePressed->button == sf::Mouse::Button::Left) && newGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
 				currentGameState = GAME_STATE::IN_GAME;
 			}
@@ -118,7 +132,8 @@ void pollEvents(sf::RenderWindow& window, sf::Vector2f mousePosView)
 	}
 }
 
-void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, ActionButton *actionButtons[4], BinButton *binButtons[4])
+void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, 
+	ActionButton *actionButtons[4], BinButton *binButtons[4], Hearts& playerLives, GameButton *gameButtons[3])
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -132,19 +147,50 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, ActionB
 			{
 				window.close();
 			}
-			if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
+			if (keyPressed->scancode == sf::Keyboard::Scancode::P) 
+			{
 				currentGameState = GAME_STATE::MAIN_MENU;
+			}
+			// BELOW IS
+			// TESTING ONLY ->
+			if (keyPressed->scancode == sf::Keyboard::Scancode::L)
+			{
+				playerLives.decrementLives();
+			}
+			if (keyPressed->scancode == sf::Keyboard::Scancode::G)
+			{
+				playerLives.incrementLives();
 			}
 		}
 		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{
-			if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons))
+			// Handles attempting to interact with an object that is ready to be binned.
+			if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons) && gameButtons[randomRecyclable]->getReadyToBin())
 			{
-				std::cout << "MEOW" << std::endl;
+				std::cout << "THIS ITEM IS READY FOR THE BIN" << std::endl;
+				playerLives.decrementLives();
+				if (playerLives.getCurrentLives() == 0) {
+					gameButtons[randomRecyclable]->resetGameButton();
+					playerLives.resetCurrentLives();
+					randomRecyclable = rand() % 3;
+
+					currentGameState = GAME_STATE::MAIN_MENU;
+				}
+				playerLives.updateTexture(window);
 			}
-			if ((mousePressed->button == sf::Mouse::Button::Left) && isBinButton(mousePosView, binButtons))
+			// Handles attempting to bin an object that still needs to be acted wtih
+			if ((mousePressed->button == sf::Mouse::Button::Left) && isBinButton(mousePosView, binButtons) && gameButtons[randomRecyclable]->getNeedsAction())
 			{
-				std::cout << "WOOF" << std::endl;
+				std::cout << "THIS ITEM NEEDS AN ACTION DONE TO IT BEFORE BEING BINNED" << std::endl;
+				playerLives.decrementLives();
+				if (playerLives.getCurrentLives() == 0) {
+					gameButtons[randomRecyclable]->resetGameButton();
+					playerLives.resetCurrentLives();
+					randomRecyclable = rand() % 3;
+
+					currentGameState = GAME_STATE::MAIN_MENU;
+				}
+				playerLives.updateTexture(window);
 			}
 		}
 	}
@@ -154,9 +200,6 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, ActionB
 
 int main() {
 	srand(time(NULL));
-	int randNum = rand() % 3;
-	std::cout << randNum << std::endl;
-
 
 	std::cout << "Start of program" << std::endl;
 	// Main Window
@@ -303,7 +346,9 @@ int main() {
 	loadTexture(plasticColaIdleTexture, "Sprites/RecycleMe_Plastic_CocaCola_HalfEmpty.png");
 	loadTexture(plasticColaHoverTexture, "Sprites/RecycleMe_Plastic_CocaCola_Empty.png");
 
-	GameButton plasticColaButton(plasticColaIdleTexture, plasticColaHoverTexture, 800.0f, 300.0f, true, false, BIN::PLASTIC, ACTION::EMPTY);
+	GameButton plasticColaButton(plasticColaIdleTexture, plasticColaHoverTexture, 
+		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
+	GameButton* ptrPlasticColaButton = &plasticColaButton;
 
 	// Fragile Cardboard Box Button
 	sf::Texture fragileCardboardBoxIdleTexture;
@@ -311,17 +356,32 @@ int main() {
 	loadTexture(fragileCardboardBoxIdleTexture, "Sprites/RecycleMe_Cardboard_Fragile_Unfolded.png");
 	loadTexture(fragileCardboardBoxHoverTexture, "Sprites/RecycleMe_Cardboard_Fragile_Folded.png");
 
-	GameButton fragileCardboardBoxButton(fragileCardboardBoxIdleTexture, fragileCardboardBoxHoverTexture, 800.0f, 300.0f, true, false, BIN::PLASTIC, ACTION::EMPTY);
+	GameButton fragileCardboardBoxButton(fragileCardboardBoxIdleTexture, fragileCardboardBoxHoverTexture, 
+		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
+	GameButton* ptrFragileCardboardBoxButton = &fragileCardboardBoxButton;
 
 	// Dominos Pizza Button
 	sf::Texture dominosPizzaBoxIdleTexture;
 	loadTexture(dominosPizzaBoxIdleTexture, "Sprites/RecycleMe_Trash_Dominos.png");
 
-	GameButton dominosPizzaBoxButton(dominosPizzaBoxIdleTexture, 800.0f, 300.0f, false, true, BIN::PLASTIC, ACTION::EMPTY);
+	GameButton dominosPizzaBoxButton(dominosPizzaBoxIdleTexture, 
+		800.0f, 600.0f, false, true, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::ONE);
+	GameButton* ptrDominosPizzaBoxButton = &dominosPizzaBoxButton;
 
-	Button gameObjects[] = { plasticColaButton, fragileCardboardBoxButton, dominosPizzaBoxButton };
-	gameObjects[PLASTIC_COLA].setButtonPosition(800.0f, 400.0f);
+	GameButton *gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton };
+	
+	// IGNORE FOR NOW
+	//gameObjects[PLASTIC_COLA].setButtonPosition(800.0f, 600.0f);
 
+	// Hearts - aka player's lives
+	sf::Texture threeLives;
+	sf::Texture twoLives;
+	sf::Texture oneLife;
+	loadTexture(threeLives, "Sprites/RecycleMe_Lives_Three.png");
+	loadTexture(twoLives, "Sprites/RecycleMe_Lives_Two.png");
+	loadTexture(oneLife, "Sprites/RecycleMe_Lives_One.png");
+
+	Hearts playerLives(oneLife, twoLives, threeLives, 800.0f, 100.0f);
 
 	// Main Game Loop
 	while (window->isOpen()) 
@@ -343,9 +403,9 @@ int main() {
 
 			// Draw Sprites (Buttons and Others)
 			window->draw(titleCardSprite);
-			window->draw(newGameButton.getSprite());
-			window->draw(learnRecyclingButton.getSprite());
-			window->draw(exitGameButton.getSprite());
+			window->draw(*newGameButton.getSprite());
+			window->draw(*learnRecyclingButton.getSprite());
+			window->draw(*exitGameButton.getSprite());
 
 			// Drawing
 			window->display();
@@ -354,22 +414,24 @@ int main() {
 		{
 			
 			//pollEvents(*window, mousePosView);
-			pollGameEvents(*window, mousePosView, actionButtons, binButtons);
+			pollGameEvents(*window, mousePosView, actionButtons, binButtons, playerLives, gameObjects);
 
 			// Render And Draw Menu Options
 			window->clear();
 			for (int i = 0; i < 4; i++) {
 				actionButtons[i]->updateTexture((*window));
 				binButtons[i]->updateTexture((*window));
-				window->draw(actionButtons[i]->getSprite());
-				window->draw(binButtons[i]->getSprite());
+				window->draw(*actionButtons[i]->getSprite());
+				window->draw(*binButtons[i]->getSprite());
 			}
 
 			// Render
-			gameObjects[PLASTIC_COLA].updateTexture((*window));
+			//gameObjects[randomRecyclable]->updateTexture((*window));
+			playerLives.updateTexture(*window);
 
 			// Draw 
-			window->draw(gameObjects[PLASTIC_COLA].getSprite());
+			window->draw(*gameObjects[randomRecyclable]->getSprite());
+			window->draw(*playerLives.getSprite());
 
 			//Drawing
 			window->display();

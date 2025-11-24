@@ -21,7 +21,8 @@ class Hearts : public Button
 
 		void setCurrentLives(int lives) 
 		{
-			if (lives > 3) {
+			if (lives > 3) 
+			{
 				currentLives = 3;
 			} 
 			else if (lives < 0)
@@ -37,6 +38,28 @@ class Hearts : public Button
 		void resetCurrentLives()
 		{
 			currentLives = 3;
+		}
+
+		void updateTexture(const sf::RenderWindow& window);
+
+		void decrementLives()
+		{
+			if (currentLives == 0) 
+			{
+				std::cout << "Tried decrementing below 0" << std::endl;
+				return;
+			}
+			currentLives -= 1;
+		}
+
+		void incrementLives()
+		{
+			if (currentLives == 3) 
+			{
+				std::cout << "Tried incrementing above 3" << std::endl;
+				return;
+			}
+			currentLives += 1;
 		}
 
 		int getThisButtonID() 

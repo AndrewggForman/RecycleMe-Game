@@ -2,9 +2,7 @@
 
 ActionButton::ActionButton(sf::Texture& texture, float x, float y, int action) : Button(texture, x, y)
 {
-
 	setActionType(action);
-
 }
 
 ActionButton::ActionButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, int actionType) : Button(texture1, texture2, x, y)

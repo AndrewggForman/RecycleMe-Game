@@ -1,9 +1,11 @@
 #include "Hearts.h"
 
 
-Hearts::Hearts(sf::Texture& threeLives, sf::Texture& twoLives, sf::Texture& oneLife, float x, float y)
+Hearts::Hearts(sf::Texture& oneLife, sf::Texture& twoLives, sf::Texture& threeLives, float x, float y) : Button(oneLife, twoLives, x, y)
 {
-	
+	this->maxLives = threeLives;
+	//setHoverTexture(twoLives);
+	//setIdleTexture(oneLife);
 }
 
 Hearts::~Hearts() 
@@ -20,5 +22,27 @@ bool Hearts::operator==(Hearts& gameItem)
 	else 
 	{
 		return false;
+	}
+}
+
+void Hearts::updateTexture(const sf::RenderWindow& window) {
+	if (currentLives == 3)
+	{
+		getSprite()->setTexture(maxLives);
+	}
+	
+	if (currentLives == 2)
+	{
+		getSprite()->setTexture(this->getHoverTexture());
+	}
+
+	if (currentLives == 1)
+	{
+		getSprite()->setTexture(this->getIdleTexture());
+	}
+
+	if (currentLives > 3 || currentLives < 0)
+	{
+		throw std::runtime_error("ERROR::NUMBER OF LIVES IS GREATER THAN 3 OR LESS THAN 0");
 	}
 }

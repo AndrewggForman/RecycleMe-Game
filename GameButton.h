@@ -3,7 +3,7 @@
 #define GAME_BUTTON
 
 #include "Button.h"
-
+enum POSSIBLE_STATES { ONE = 1, TWO = 2 };
 class GameButton : public Button
 {
 	private:
@@ -11,10 +11,11 @@ class GameButton : public Button
 		bool readyToBin;
 		int binType;
 		int actionType;
+		int resetAmount;
 
 	public:
-		GameButton(sf::Texture& texture, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType);
-		GameButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType);
+		GameButton(sf::Texture& texture, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType, int resetAmount);
+		GameButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType, int resetAmount);
 		~GameButton();
 
 		void setNeedsAction(bool actionStatus)
@@ -54,6 +55,13 @@ class GameButton : public Button
 		{
 			return this->getCurrButtonID();
 		}
+		int getResetAmount() const 
+		{
+			return resetAmount;
+		}
+
+		void resetGameButton();
+
 		bool operator==(GameButton& gameItem);
 };
 

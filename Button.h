@@ -31,9 +31,9 @@ class Button
 
 		void updateTexture(const sf::RenderWindow& window);
 		
-		sf::Sprite getSprite() 
+		sf::Sprite* getSprite() 
 		{
-			return (*sprite);
+			return sprite;
 		}
 
 		int getCurrButtonID() {
@@ -53,6 +53,24 @@ class Button
 		void setButtonPosition(float x, float y);
 
 		Button(const Button& otherButton);
+
+		sf::Texture& getIdleTexture() {
+			return idleTexture;
+		}
+
+		sf::Texture& getHoverTexture() {
+			return hoverTexture;
+		}
+
+		void setIdleTexture(sf::Texture& idleTexture)
+		{
+			this->idleTexture = idleTexture;
+		}
+
+		void setHoverTexture(sf::Texture& hoverTexture)
+		{
+			this->hoverTexture = hoverTexture;
+		}
 };
 
 
