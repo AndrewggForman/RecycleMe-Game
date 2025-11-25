@@ -31,13 +31,15 @@ unsigned int currentGameState = GAME_STATE::MAIN_MENU;
 
 int CURRENT_GAME_ITEM = 0;
 bool needNewGameItem = true;
+int PLAYER_SCORE = 0;
 
 
 int randomRecyclable = rand() % 3;
 
 bool isActionButton(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
 {
-	for (int i = 0; i < MENU_ITEMS_COUNT; i++) {
+	for (int i = 0; i < MENU_ITEMS_COUNT; i++) 
+	{
 		if (actionButtons[i]->getSprite()->getGlobalBounds().contains(mousePosView))
 		{
 			return true;
@@ -46,14 +48,42 @@ bool isActionButton(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
 	return false;
 }
 
-bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) {
-	for (int i = 0; i < MENU_ITEMS_COUNT; i++) {
+
+
+bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) 
+{
+	for (int i = 0; i < MENU_ITEMS_COUNT; i++) 
+	{
 		if (binButtons[i]->getSprite()->getGlobalBounds().contains(mousePosView))
 		{
 			return true;
 		}
 	}
 	return false;
+}
+
+int getCurrentBinButtonType(sf::Vector2f mousePosView, BinButton* binButtons[4])
+{
+	for (int i = 0; i < MENU_ITEMS_COUNT; i++) 
+	{
+		if (binButtons[i]->getSprite()->getGlobalBounds().contains(mousePosView))
+		{
+			return binButtons[i]->getBinType();
+		}
+	}
+	throw std::runtime_error("ERROR::SUPPOSED TO FIND A BINTYPE");
+}
+
+int getCurrentActionButtonType(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
+{
+	for (int i = 0; i < MENU_ITEMS_COUNT; i++)
+	{
+		if (actionButtons[i]->getSprite()->getGlobalBounds().contains(mousePosView))
+		{
+			return actionButtons[i]->getActionType();
+		}
+	}
+	throw std::runtime_error("ERROR::SUPPOSED TO FIND A ACTIONTYPE");
 }
 
 // Helper function for when the player loses OR the player completes a proper recycle of an object
@@ -133,7 +163,7 @@ void pollEvents(sf::RenderWindow& window, sf::Vector2f mousePosView)
 }
 
 void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, 
-	ActionButton *actionButtons[4], BinButton *binButtons[4], Hearts& playerLives, GameButton *gameButtons[3])
+	ActionButton *actionButtons[4], BinButton *binButtons[4], Hearts& playerLives, GameButton *gameButtons[GAME_ITEMS_COUNT])
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -164,31 +194,105 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 		}
 		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{
-			// Handles attempting to interact with an object that is ready to be binned.
-			if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons) && gameButtons[randomRecyclable]->getReadyToBin())
+			// Handles attempting to perform an action on an object that is ready to be binned.
+			if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons)
+				&& gameButtons[randomRecyclable]->getReadyToBin())
 			{
+				std::cout << "1" << std::endl;
 				std::cout << "THIS ITEM IS READY FOR THE BIN" << std::endl;
 				playerLives.decrementLives();
 				if (playerLives.getCurrentLives() == 0) {
 					gameButtons[randomRecyclable]->resetGameButton();
 					playerLives.resetCurrentLives();
-					randomRecyclable = rand() % 3;
+					PLAYER_SCORE = 0;
+					randomRecyclable = rand() % GAME_ITEMS_COUNT;
 
 					currentGameState = GAME_STATE::MAIN_MENU;
 				}
 				playerLives.updateTexture(window);
 			}
-			// Handles attempting to bin an object that still needs to be acted wtih
-			if ((mousePressed->button == sf::Mouse::Button::Left) && isBinButton(mousePosView, binButtons) && gameButtons[randomRecyclable]->getNeedsAction())
+			else if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons))
 			{
+				std::cout << "2" << std::endl;
+				// Correct Action
+				std::cout << gameButtons[randomRecyclable]->getActionType() << ":" 
+					<< getCurrentActionButtonType(mousePosView, actionButtons) << std::endl;
+				if (gameButtons[randomRecyclable]->getActionType() == getCurrentActionButtonType(mousePosView, actionButtons))
+				{
+					std::cout << "3" << std::endl;
+					std::cout << "THIS ITEM WAS PROPERLY ACTIONED" << std::endl;
+					gameButtons[randomRecyclable]->setNeedsAction(false);
+					gameButtons[randomRecyclable]->setReadyToBin(true);
+					gameButtons[randomRecyclable]->updateTexture();
+				}
+				// Incorrect Action
+				else {
+					std::cout << "4" << std::endl;
+					std::cout << "THE INCORRECT ACTION WAS TAKEN ON THIS BUTTON" << std::endl;
+					playerLives.decrementLives();
+					if (playerLives.getCurrentLives() == 0) {
+						gameButtons[randomRecyclable]->resetGameButton();
+						playerLives.resetCurrentLives();
+						PLAYER_SCORE = 0;
+						randomRecyclable = rand() % GAME_ITEMS_COUNT;
+
+						currentGameState = GAME_STATE::MAIN_MENU;
+					}
+					playerLives.updateTexture(window);
+				}
+				playerLives.updateTexture(window);
+			}
+
+			// Handles attempting to bin an object that still needs to be acted wtih
+			if ((mousePressed->button == sf::Mouse::Button::Left) && isBinButton(mousePosView, binButtons) 
+				&& gameButtons[randomRecyclable]->getNeedsAction())
+			{
+				std::cout << "5" << std::endl;
 				std::cout << "THIS ITEM NEEDS AN ACTION DONE TO IT BEFORE BEING BINNED" << std::endl;
 				playerLives.decrementLives();
 				if (playerLives.getCurrentLives() == 0) {
 					gameButtons[randomRecyclable]->resetGameButton();
 					playerLives.resetCurrentLives();
-					randomRecyclable = rand() % 3;
+					PLAYER_SCORE = 0;
+					randomRecyclable = rand() % GAME_ITEMS_COUNT;
 
 					currentGameState = GAME_STATE::MAIN_MENU;
+				}
+				playerLives.updateTexture(window);
+			}
+			// Handles attempting to bin an object that is ready to be binned
+			else if ((mousePressed->button == sf::Mouse::Button::Left) && (isBinButton(mousePosView, binButtons)))
+			{
+				std::cout << "6" << std::endl;
+				// Correct Bin
+				if (gameButtons[randomRecyclable]->getBinType() == getCurrentBinButtonType(mousePosView, binButtons))
+				{
+					std::cout << "7" << std::endl;
+					std::cout << "THIS ITEM WAS PROPERLY BINNED" << std::endl;
+					PLAYER_SCORE++;
+					gameButtons[randomRecyclable]->resetGameButton();
+					int curr_rand = randomRecyclable;
+					while (randomRecyclable == curr_rand)
+					{
+						randomRecyclable = rand() % GAME_ITEMS_COUNT;
+					}
+					std::cout << "Current player score: " << PLAYER_SCORE << std::endl;
+					playerLives.updateTexture(window);
+				}
+				// Incorrect Bin
+				else {
+					std::cout << "8" << std::endl;
+					std::cout << "THIS ITEM WAS ATTEMPTED TO BE BINNED WHEN NOT READY" << std::endl;
+					playerLives.decrementLives();
+					if (playerLives.getCurrentLives() == 0) {
+						gameButtons[randomRecyclable]->resetGameButton();
+						playerLives.resetCurrentLives();
+						PLAYER_SCORE = 0;
+						randomRecyclable = rand() % GAME_ITEMS_COUNT;
+
+						currentGameState = GAME_STATE::MAIN_MENU;
+					}
+					playerLives.updateTexture(window);
 				}
 				playerLives.updateTexture(window);
 			}
@@ -357,7 +461,7 @@ int main() {
 	loadTexture(fragileCardboardBoxHoverTexture, "Sprites/RecycleMe_Cardboard_Fragile_Folded.png");
 
 	GameButton fragileCardboardBoxButton(fragileCardboardBoxIdleTexture, fragileCardboardBoxHoverTexture, 
-		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
+		800.0f, 600.0f, true, false, BIN::CARDBOARD, ACTION::FLATTEN, POSSIBLE_STATES::TWO);
 	GameButton* ptrFragileCardboardBoxButton = &fragileCardboardBoxButton;
 
 	// Dominos Pizza Button
@@ -365,7 +469,7 @@ int main() {
 	loadTexture(dominosPizzaBoxIdleTexture, "Sprites/RecycleMe_Trash_Dominos.png");
 
 	GameButton dominosPizzaBoxButton(dominosPizzaBoxIdleTexture, 
-		800.0f, 600.0f, false, true, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::ONE);
+		800.0f, 600.0f, false, true, BIN::TRASH, ACTION::NO_ACTION, POSSIBLE_STATES::ONE);
 	GameButton* ptrDominosPizzaBoxButton = &dominosPizzaBoxButton;
 
 	GameButton *gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton };

@@ -13,7 +13,7 @@ class ActionButton : public Button {
 		ActionButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, int actionType);
 		~ActionButton();
 
-		void setActionType(int binType)
+		void setActionType(int actionType)
 		{
 			this->actionType = actionType;
 		}

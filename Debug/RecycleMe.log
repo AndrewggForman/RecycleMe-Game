@@ -1,4 +1,12 @@
-﻿  GameButton.cpp
+﻿  BinButton.cpp
+C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,47): warning C4275: non dll-interface class 'std::runtime_error' used as base for dll-interface class 'sf::Exception'
+  (compiling source file 'BinButton.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      see declaration of 'std::runtime_error'
+      C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,23):
+      see declaration of 'sf::Exception'
+  
+  GameButton.cpp
 C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,47): warning C4275: non dll-interface class 'std::runtime_error' used as base for dll-interface class 'sf::Exception'
   (compiling source file 'GameButton.cpp')
       C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
@@ -6,4 +14,14 @@ C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\includ
       C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,23):
       see declaration of 'sf::Exception'
   
+  RecycleMe.cpp
+C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,47): warning C4275: non dll-interface class 'std::runtime_error' used as base for dll-interface class 'sf::Exception'
+  (compiling source file 'RecycleMe.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\stdexcept(100,30):
+      see declaration of 'std::runtime_error'
+      C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\include\SFML\System\Exception.hpp(41,23):
+      see declaration of 'sf::Exception'
+  
+C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\RecycleMe\RecycleMe.cpp(306,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Generating Code...
   RecycleMe.vcxproj -> C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\Debug\RecycleMe.exe

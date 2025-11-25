@@ -41,6 +41,7 @@ void GameButton::resetGameButton()
 	{
 		case POSSIBLE_STATES::ONE:
 			this->getSprite()->setTexture(getIdleTexture());
+			this->setReadyToBin(true);
 			break;
 		case POSSIBLE_STATES::TWO:
 			this->setButtonState(1);
@@ -53,5 +54,16 @@ void GameButton::resetGameButton()
 			std::string errorString = "ERROR::UNEXPECTE RESET AMOUNT::?";
 			throw std::runtime_error(errorString);
 			break;
+	}
+}
+
+void GameButton::updateTexture()
+{
+	switch (getReadyToBin())
+	{
+		case true:
+			this->getSprite()->setTexture(getIdleTexture());
+		case false:
+			this->getSprite()->setTexture(getHoverTexture());
 	}
 }

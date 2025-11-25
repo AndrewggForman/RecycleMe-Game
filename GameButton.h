@@ -60,6 +60,8 @@ class GameButton : public Button
 			return resetAmount;
 		}
 
+		void updateTexture();
+
 		void resetGameButton();
 
 		bool operator==(GameButton& gameItem);
