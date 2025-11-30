@@ -16,7 +16,7 @@
 #include <SFML/Graphics.hpp>
 
 const int MENU_ITEMS_COUNT = 4;
-const int GAME_ITEMS_COUNT = 5;
+const int GAME_ITEMS_COUNT = 6;
 const float ACTIONBUTTONWIDTH = 250.0f;
 const float ACTIONBUTTONHEIGHT = 200.0f;
 unsigned int width = 1600;
@@ -515,8 +515,16 @@ int main()
 		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
 	GameButton* ptrPlasticContainerButton = &plasticContainerButton;
 
+	// Ice Cream Button
+	sf::Texture iceCreamIdleTexture;
+	loadTexture(iceCreamIdleTexture, "Sprites/RecycleMe_Trash_IceCream.png");
+
+	GameButton iceCreamButton(iceCreamIdleTexture,
+		800.0f, 600.0f, false, true, BIN::TRASH, ACTION::NO_ACTION, POSSIBLE_STATES::ONE);
+	GameButton* ptrIceCreamButton = &iceCreamButton;
+
 	// Array of Pointers to Game Objects
-	GameButton* gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton};
+	GameButton* gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton, ptrIceCreamButton};
 
 	// Hearts - aka player's lives
 	sf::Texture threeLives;
