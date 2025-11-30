@@ -4,7 +4,8 @@
 
 #include "Button.h"
 
-class ActionButton : public Button {
+class ActionButton : public Button 
+{
 	private:
 		int actionType;
 

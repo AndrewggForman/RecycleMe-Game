@@ -1,6 +1,5 @@
 #include "Hearts.h"
 
-
 Hearts::Hearts(sf::Texture& oneLife, sf::Texture& twoLives, sf::Texture& threeLives, float x, float y) : Button(oneLife, twoLives, x, y)
 {
 	this->maxLives = threeLives;

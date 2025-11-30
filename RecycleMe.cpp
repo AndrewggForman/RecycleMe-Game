@@ -16,7 +16,7 @@
 #include <SFML/Graphics.hpp>
 
 const int MENU_ITEMS_COUNT = 4;
-const int GAME_ITEMS_COUNT = 3;
+const int GAME_ITEMS_COUNT = 5;
 const float ACTIONBUTTONWIDTH = 250.0f;
 const float ACTIONBUTTONHEIGHT = 200.0f;
 unsigned int width = 1600;
@@ -25,7 +25,6 @@ unsigned int height = 900;
 enum BUTTON_STATE { IDLE = 0, HOVER = 1, PRESSED = 2 };
 enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2 };
 enum GAME_ITEMS { PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2 };
-
 
 unsigned int currentGameState = GAME_STATE::MAIN_MENU;
 
@@ -47,8 +46,6 @@ bool isActionButton(sf::Vector2f mousePosView, ActionButton* actionButtons[4])
 	}
 	return false;
 }
-
-
 
 bool isBinButton(sf::Vector2f mousePosView, BinButton* binButtons[4]) 
 {
@@ -96,7 +93,17 @@ void resetGameButton(GameButton& gameButton)
 // Loads a imagae onto a texture object, throws error if fails
 void loadTexture(sf::Texture& texture, std::string filepath)
 {
-	if (!texture.loadFromFile(filepath)) {
+	if (!texture.loadFromFile(filepath)) 
+	{
+		std::string errorString = "ERROR::COULD NOT LOAD FILE::" + filepath;
+		throw std::runtime_error(errorString);
+	}
+}
+
+void loadFont(sf::Font& font, std::string filepath)
+{
+	if (!font.openFromFile(filepath))
+	{
 		std::string errorString = "ERROR::COULD NOT LOAD FILE::" + filepath;
 		throw std::runtime_error(errorString);
 	}
@@ -226,7 +233,8 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					gameButtons[randomRecyclable]->updateTexture();
 				}
 				// Incorrect Action
-				else {
+				else 
+				{
 					std::cout << "4" << std::endl;
 					std::cout << "THE INCORRECT ACTION WAS TAKEN ON THIS BUTTON" << std::endl;
 					playerLives.decrementLives();
@@ -280,7 +288,8 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					playerLives.updateTexture(window);
 				}
 				// Incorrect Bin
-				else {
+				else 
+				{
 					std::cout << "8" << std::endl;
 					std::cout << "THIS ITEM WAS ATTEMPTED TO BE BINNED WHEN NOT READY" << std::endl;
 					playerLives.decrementLives();
@@ -302,7 +311,8 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 
 
 
-int main() {
+int main() 
+{
 	srand(time(NULL));
 
 	std::cout << "Start of program" << std::endl;
@@ -314,6 +324,18 @@ int main() {
 	// Turns mouse position based on currently viewed window into coords for our window. (magic)
 	sf::Vector2f mousePosView = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
+	// Loading Lobster Font
+	sf::Font gameScoreFont;
+	loadFont(gameScoreFont, "Fonts/Lobster-Regular.ttf");
+
+	// Game Score Text Initialization
+	sf::Text gameScoreText(gameScoreFont);
+	gameScoreText.setString("SCORE: ");
+	gameScoreText.setCharacterSize(100);
+	gameScoreText.setFillColor(sf::Color::Magenta);
+	gameScoreText.setOutlineColor(sf::Color::White);
+	gameScoreText.setOutlineThickness(4.0f);
+	gameScoreText.setPosition({ 25.0f, 10.0f });
 
 	// Main Menu Buttons:
 	// Title Card
@@ -451,7 +473,7 @@ int main() {
 	loadTexture(plasticColaHoverTexture, "Sprites/RecycleMe_Plastic_CocaCola_Empty.png");
 
 	GameButton plasticColaButton(plasticColaIdleTexture, plasticColaHoverTexture, 
-		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
+		800.0f, 575.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
 	GameButton* ptrPlasticColaButton = &plasticColaButton;
 
 	// Fragile Cardboard Box Button
@@ -472,10 +494,29 @@ int main() {
 		800.0f, 600.0f, false, true, BIN::TRASH, ACTION::NO_ACTION, POSSIBLE_STATES::ONE);
 	GameButton* ptrDominosPizzaBoxButton = &dominosPizzaBoxButton;
 
-	GameButton *gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton };
-	
-	// IGNORE FOR NOW
-	//gameObjects[PLASTIC_COLA].setButtonPosition(800.0f, 600.0f);
+
+	// Mason Jar Button
+	sf::Texture masonJarIdleTexture;
+	sf::Texture masonJarHoverTexture;
+	loadTexture(masonJarIdleTexture, "Sprites/RecycleMe_Glass_MasonJar_Stickered.png");
+	loadTexture(masonJarHoverTexture, "Sprites/RecycleMe_Glass_MasonJar_Clean.png");
+
+	GameButton masonJarButton(masonJarIdleTexture, masonJarHoverTexture, 
+		800.0f, 600.0f, true, false, BIN::GLASS, ACTION::PEEL_LABEL, POSSIBLE_STATES::TWO);
+	GameButton* ptrMasonJarButton = &masonJarButton;
+
+	// Plastic Container Button
+	sf::Texture plasticContainerIdleTexture;
+	sf::Texture plasticContainerHoverTexture;
+	loadTexture(plasticContainerIdleTexture, "Sprites/RecycleMe_Plastic_Container_Food.png");
+	loadTexture(plasticContainerHoverTexture, "Sprites/RecycleMe_Plastic_Container_Empty.png");
+
+	GameButton plasticContainerButton(plasticContainerIdleTexture, plasticContainerHoverTexture,
+		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::EMPTY, POSSIBLE_STATES::TWO);
+	GameButton* ptrPlasticContainerButton = &plasticContainerButton;
+
+	// Array of Pointers to Game Objects
+	GameButton* gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton};
 
 	// Hearts - aka player's lives
 	sf::Texture threeLives;
@@ -493,17 +534,16 @@ int main() {
 		mousePosView = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 		if (currentGameState == GAME_STATE::MAIN_MENU) 
 		{
-			
 			pollEvents(*window, exitGameButton, newGameButton, mousePosView);
 
 			// Render
+
 			window->clear();
 
 			// Update Button Textures
 			newGameButton.updateTexture((*window));
 			learnRecyclingButton.updateTexture((*window));
 			exitGameButton.updateTexture((*window));
-
 
 			// Draw Sprites (Buttons and Others)
 			window->draw(titleCardSprite);
@@ -516,11 +556,10 @@ int main() {
 		}
 		else if (currentGameState == GAME_STATE::IN_GAME)
 		{
-			
 			//pollEvents(*window, mousePosView);
 			pollGameEvents(*window, mousePosView, actionButtons, binButtons, playerLives, gameObjects);
 
-			// Render And Draw Menu Options
+			// Render And Draw Both: Action And Options
 			window->clear();
 			for (int i = 0; i < 4; i++) {
 				actionButtons[i]->updateTexture((*window));
@@ -532,9 +571,11 @@ int main() {
 			// Render
 			//gameObjects[randomRecyclable]->updateTexture((*window));
 			playerLives.updateTexture(*window);
+			gameScoreText.setString("SCORE: " + std::to_string(PLAYER_SCORE));
 
 			// Draw 
 			window->draw(*gameObjects[randomRecyclable]->getSprite());
+			window->draw(gameScoreText);
 			window->draw(*playerLives.getSprite());
 
 			//Drawing
@@ -549,8 +590,6 @@ int main() {
 			std::string errorString = "ERROR::REACHED UNKNOWN GAMESTATE::" + currentGameState;
 			throw std::runtime_error(errorString);
 		}
-
-
 	}
 	
 
