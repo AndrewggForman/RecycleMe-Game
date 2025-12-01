@@ -23,7 +23,7 @@ unsigned int width = 1600;
 unsigned int height = 900;
 
 enum BUTTON_STATE { IDLE = 0, HOVER = 1, PRESSED = 2 };
-enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2 };
+enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2, SCORE_SCREEN = 3 };
 enum GAME_ITEMS { PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2 };
 
 unsigned int currentGameState = GAME_STATE::MAIN_MENU;
@@ -31,7 +31,6 @@ unsigned int currentGameState = GAME_STATE::MAIN_MENU;
 int CURRENT_GAME_ITEM = 0;
 bool needNewGameItem = true;
 int PLAYER_SCORE = 0;
-
 
 int randomRecyclable = rand() % 3;
 
@@ -142,28 +141,8 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 			}
 			if ((mousePressed->button == sf::Mouse::Button::Left) && newGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
+				PLAYER_SCORE = 0;
 				currentGameState = GAME_STATE::IN_GAME;
-			}
-		}
-	}
-}
-
-void pollEvents(sf::RenderWindow& window, sf::Vector2f mousePosView)
-{
-	while (const std::optional event = window.pollEvent())
-	{
-		if (event->is<sf::Event::Closed>())
-		{
-			window.close();
-		}
-		else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-		{
-			if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
-			{
-				window.close();
-			}
-			if (keyPressed->scancode == sf::Keyboard::Scancode::P) {
-				currentGameState = GAME_STATE::MAIN_MENU;
 			}
 		}
 	}
@@ -211,10 +190,9 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				if (playerLives.getCurrentLives() == 0) {
 					gameButtons[randomRecyclable]->resetGameButton();
 					playerLives.resetCurrentLives();
-					PLAYER_SCORE = 0;
 					randomRecyclable = rand() % GAME_ITEMS_COUNT;
 
-					currentGameState = GAME_STATE::MAIN_MENU;
+					currentGameState = GAME_STATE::SCORE_SCREEN;
 				}
 				playerLives.updateTexture(window);
 			}
@@ -238,13 +216,13 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					std::cout << "4" << std::endl;
 					std::cout << "THE INCORRECT ACTION WAS TAKEN ON THIS BUTTON" << std::endl;
 					playerLives.decrementLives();
-					if (playerLives.getCurrentLives() == 0) {
+					if (playerLives.getCurrentLives() == 0) 
+					{
 						gameButtons[randomRecyclable]->resetGameButton();
 						playerLives.resetCurrentLives();
-						PLAYER_SCORE = 0;
 						randomRecyclable = rand() % GAME_ITEMS_COUNT;
 
-						currentGameState = GAME_STATE::MAIN_MENU;
+						currentGameState = GAME_STATE::SCORE_SCREEN;
 					}
 					playerLives.updateTexture(window);
 				}
@@ -258,13 +236,13 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				std::cout << "5" << std::endl;
 				std::cout << "THIS ITEM NEEDS AN ACTION DONE TO IT BEFORE BEING BINNED" << std::endl;
 				playerLives.decrementLives();
-				if (playerLives.getCurrentLives() == 0) {
+				if (playerLives.getCurrentLives() == 0) 
+				{
 					gameButtons[randomRecyclable]->resetGameButton();
 					playerLives.resetCurrentLives();
-					PLAYER_SCORE = 0;
 					randomRecyclable = rand() % GAME_ITEMS_COUNT;
 
-					currentGameState = GAME_STATE::MAIN_MENU;
+					currentGameState = GAME_STATE::SCORE_SCREEN;
 				}
 				playerLives.updateTexture(window);
 			}
@@ -293,13 +271,14 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					std::cout << "8" << std::endl;
 					std::cout << "THIS ITEM WAS ATTEMPTED TO BE BINNED WHEN NOT READY" << std::endl;
 					playerLives.decrementLives();
-					if (playerLives.getCurrentLives() == 0) {
+					if (playerLives.getCurrentLives() == 0) 
+					{
 						gameButtons[randomRecyclable]->resetGameButton();
 						playerLives.resetCurrentLives();
-						PLAYER_SCORE = 0;
+				
 						randomRecyclable = rand() % GAME_ITEMS_COUNT;
 
-						currentGameState = GAME_STATE::MAIN_MENU;
+						currentGameState = GAME_STATE::SCORE_SCREEN;
 					}
 					playerLives.updateTexture(window);
 				}
@@ -309,7 +288,30 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 	}
 }
 
-
+void pollScoreScreenEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, Button& mainMenuButton)
+{
+	while (const std::optional event = window.pollEvent())
+	{
+		if (event->is<sf::Event::Closed>())
+		{
+			window.close();
+		}
+		else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
+			{
+				window.close();
+			}
+		}
+		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+		{
+			if ((mousePressed->button == sf::Mouse::Button::Left) && mainMenuButton.getSprite()->getGlobalBounds().contains(mousePosView))
+			{
+				currentGameState = GAME_STATE::MAIN_MENU;
+			}
+		}
+	}
+}
 
 int main() 
 {
@@ -328,6 +330,10 @@ int main()
 	sf::Font gameScoreFont;
 	loadFont(gameScoreFont, "Fonts/Lobster-Regular.ttf");
 
+	// Loading Science Gothic Font
+	sf::Font statsFont;
+	loadFont(statsFont, "Fonts/ScienceGothic-VariableFont_CTRS,slnt,wdth,wght.ttf");
+
 	// Game Score Text Initialization
 	sf::Text gameScoreText(gameScoreFont);
 	gameScoreText.setString("SCORE: ");
@@ -336,6 +342,70 @@ int main()
 	gameScoreText.setOutlineColor(sf::Color::White);
 	gameScoreText.setOutlineThickness(4.0f);
 	gameScoreText.setPosition({ 25.0f, 10.0f });
+
+	// Stats
+	// Water Conserved
+	sf::Text waterConservedText(statsFont);
+	waterConservedText.setString("Gallons of Water Conserved: ");
+	waterConservedText.setCharacterSize(50);
+	waterConservedText.setFillColor(sf::Color::Red);
+	waterConservedText.setOutlineColor(sf::Color::White);
+	waterConservedText.setOutlineThickness(2.0f);
+	waterConservedText.setPosition({ 50.0f, 200.0f });
+
+	// Seconds Saved Cleaning Ocean
+	sf::Text oceanCleaningText(statsFont);
+	oceanCleaningText.setString("Seconds of Ocean Cleaning Saved: ");
+	oceanCleaningText.setCharacterSize(50);
+	oceanCleaningText.setFillColor(sf::Color::Red);
+	oceanCleaningText.setOutlineColor(sf::Color::White);
+	oceanCleaningText.setOutlineThickness(2.0f);
+	oceanCleaningText.setPosition({ 50.0f, 300.0f });
+
+	// Marine Mammals Protected
+	sf::Text marineAnimalsText(statsFont);
+	marineAnimalsText.setString("Marine Animals Protected: ");
+	marineAnimalsText.setCharacterSize(50);
+	marineAnimalsText.setFillColor(sf::Color::Red);
+	marineAnimalsText.setOutlineColor(sf::Color::White);
+	marineAnimalsText.setOutlineThickness(2.0f);
+	marineAnimalsText.setPosition({ 50.0f, 400.0f });
+
+	// Air Quality Improved
+	sf::Text airQualityText(statsFont);
+	airQualityText.setString("Air Quality Increase %: ");
+	airQualityText.setCharacterSize(50);
+	airQualityText.setFillColor(sf::Color::Red);
+	airQualityText.setOutlineColor(sf::Color::White);
+	airQualityText.setOutlineThickness(2.0f);
+	airQualityText.setPosition({ 50.0f, 500.0f });
+
+	// Trash Pressure Reduced
+	sf::Text trashPressureText(statsFont);
+	trashPressureText.setString("Trash Pressure Decrease: ");
+	trashPressureText.setCharacterSize(50);
+	trashPressureText.setFillColor(sf::Color::Red);
+	trashPressureText.setOutlineColor(sf::Color::White);
+	trashPressureText.setOutlineThickness(2.0f);
+	trashPressureText.setPosition({ 50.0f, 600.0f });
+
+	// Small Algae Uncontaminated
+	sf::Text cleanAlgaeText(statsFont);
+	cleanAlgaeText.setString("Small Algae Uncontaminated: ");
+	cleanAlgaeText.setCharacterSize(50);
+	cleanAlgaeText.setFillColor(sf::Color::Red);
+	cleanAlgaeText.setOutlineColor(sf::Color::White);
+	cleanAlgaeText.setOutlineThickness(2.0f);
+	cleanAlgaeText.setPosition({ 50.0f, 700.0f });
+
+	// Happy Turtles
+	sf::Text happyTurtlesText(statsFont);
+	happyTurtlesText.setString("Happy Turtles: ");
+	happyTurtlesText.setCharacterSize(50);
+	happyTurtlesText.setFillColor(sf::Color::Red);
+	happyTurtlesText.setOutlineColor(sf::Color::White);
+	happyTurtlesText.setOutlineThickness(2.0f);
+	happyTurtlesText.setPosition({ 50.0f, 800.0f });
 
 	// Main Menu Buttons:
 	// Title Card
@@ -524,7 +594,8 @@ int main()
 	GameButton* ptrIceCreamButton = &iceCreamButton;
 
 	// Array of Pointers to Game Objects
-	GameButton* gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton, ptrIceCreamButton};
+	GameButton* gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, 
+		ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton, ptrIceCreamButton};
 
 	// Hearts - aka player's lives
 	sf::Texture threeLives;
@@ -536,6 +607,14 @@ int main()
 
 	Hearts playerLives(oneLife, twoLives, threeLives, 800.0f, 100.0f);
 
+	// Score Screen Buttons
+	// Return to Main Menu
+	sf::Texture returnMainMenuIdleTexture;
+	sf::Texture returnMainMenuHoverTexture;
+	loadTexture(returnMainMenuIdleTexture, "Sprites/RecycleMe_Button_MainMenu_Idle.png");
+	loadTexture(returnMainMenuHoverTexture, "Sprites/RecycleMe_Button_MainMenu_Hover.png");
+	Button returnMainMenuButton(returnMainMenuIdleTexture, returnMainMenuHoverTexture, 800.0f, 125.0f);
+
 	// Main Game Loop
 	while (window->isOpen()) 
 	{
@@ -545,7 +624,6 @@ int main()
 			pollEvents(*window, exitGameButton, newGameButton, mousePosView);
 
 			// Render
-
 			window->clear();
 
 			// Update Button Textures
@@ -569,7 +647,8 @@ int main()
 
 			// Render And Draw Both: Action And Options
 			window->clear();
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < 4; i++) 
+			{
 				actionButtons[i]->updateTexture((*window));
 				binButtons[i]->updateTexture((*window));
 				window->draw(*actionButtons[i]->getSprite());
@@ -586,12 +665,35 @@ int main()
 			window->draw(gameScoreText);
 			window->draw(*playerLives.getSprite());
 
-			//Drawing
+			// Drawing
 			window->display();
 		}
-		else if (currentGameState == GAME_STATE::LEARN_MENU) 
+		else if (currentGameState == GAME_STATE::SCORE_SCREEN) 
 		{
-			// TODO
+			pollScoreScreenEvents(*window, mousePosView, returnMainMenuButton);
+			window->clear();
+
+			// Render
+			returnMainMenuButton.updateTexture(*window);
+			oceanCleaningText.setString("Seconds of Ocean Cleaning Saved: " + std::to_string(PLAYER_SCORE * 6));
+			waterConservedText.setString("Gallons of Water Conserved: " + std::to_string(PLAYER_SCORE * 1));
+			marineAnimalsText.setString("Marine Animals Protected: " + std::to_string(PLAYER_SCORE * 0.099));
+			airQualityText.setString("Air Quality Increased: + " + std::to_string(PLAYER_SCORE * 0.02) + "%");
+			trashPressureText.setString("Trash Pressure Decreased: - " + std::to_string(PLAYER_SCORE * 0.01) + "%");
+			cleanAlgaeText.setString("Small Algae Uncontaminated: " + std::to_string(PLAYER_SCORE));
+			happyTurtlesText.setString("Happy Turtles: " + std::to_string(PLAYER_SCORE * 10));
+
+			// Draw
+			window->draw(*returnMainMenuButton.getSprite());
+			window->draw(oceanCleaningText);
+			window->draw(waterConservedText);
+			window->draw(marineAnimalsText);
+			window->draw(airQualityText);
+			window->draw(trashPressureText);
+			window->draw(cleanAlgaeText);
+			window->draw(happyTurtlesText);
+
+			window->display();
 		}
 		else
 		{
