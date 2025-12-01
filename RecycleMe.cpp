@@ -11,9 +11,11 @@
 #include <stdexcept>
 #include <time.h>
 #include <stdlib.h>
+#include <fstream>
 
-// SFML Graphics Library
+// SFML Graphics & Audio Libraries
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 const int MENU_ITEMS_COUNT = 4;
 const int GAME_ITEMS_COUNT = 6;
@@ -94,7 +96,7 @@ void loadTexture(sf::Texture& texture, std::string filepath)
 {
 	if (!texture.loadFromFile(filepath)) 
 	{
-		std::string errorString = "ERROR::COULD NOT LOAD FILE::" + filepath;
+		std::string errorString = "ERROR::COULD NOT LOAD TEXTURE FILE::" + filepath;
 		throw std::runtime_error(errorString);
 	}
 }
@@ -103,7 +105,16 @@ void loadFont(sf::Font& font, std::string filepath)
 {
 	if (!font.openFromFile(filepath))
 	{
-		std::string errorString = "ERROR::COULD NOT LOAD FILE::" + filepath;
+		std::string errorString = "ERROR::COULD NOT LOAD FONT FILE::" + filepath;
+		throw std::runtime_error(errorString);
+	}
+}
+
+void loadSound(sf::SoundBuffer& buffer, std::string filepath)
+{
+	if (!buffer.loadFromFile(filepath))
+	{
+		std::string errorString = "ERROR::COULD NOT LOAD AUDIO FILE::" + filepath;
 		throw std::runtime_error(errorString);
 	}
 }
@@ -118,7 +129,7 @@ void positionGameSprite(sf::Sprite& sprite, float x, float y)
 
 // POLL EVENTS SECTION
 // HANDLES USER INTERACTION WITH GAME (for the most part)
-void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGameButton, sf::Vector2f mousePosView) 
+void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGameButton, Button& learnGameButton, sf::Vector2f mousePosView, sf::Sound& menuSound) 
 {
 	while (const std::optional event = window.pollEvent()) 
 	{
@@ -137,19 +148,27 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 		{
 			if ((mousePressed->button == sf::Mouse::Button::Left) && exitGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
+				menuSound.play(); // Doesn't work atm, need to delay window.close() to hear it
 				window.close();
 			}
 			if ((mousePressed->button == sf::Mouse::Button::Left) && newGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
+				menuSound.play();
 				PLAYER_SCORE = 0;
 				currentGameState = GAME_STATE::IN_GAME;
+			}
+			if ((mousePressed->button == sf::Mouse::Button::Left) && learnGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
+			{
+				menuSound.play();
+
 			}
 		}
 	}
 }
 
-void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, 
-	ActionButton *actionButtons[4], BinButton *binButtons[4], Hearts& playerLives, GameButton *gameButtons[GAME_ITEMS_COUNT])
+void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
+	ActionButton* actionButtons[4], BinButton* binButtons[4], Hearts& playerLives, GameButton* gameButtons[GAME_ITEMS_COUNT],
+	sf::Sound& incorrectChoiceSound, sf::Sound& correctChoiceSound, sf::Sound& correctPrepSound)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -184,8 +203,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 			if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons)
 				&& gameButtons[randomRecyclable]->getReadyToBin())
 			{
-				std::cout << "1" << std::endl;
-				std::cout << "THIS ITEM IS READY FOR THE BIN" << std::endl;
+				incorrectChoiceSound.play();
 				playerLives.decrementLives();
 				if (playerLives.getCurrentLives() == 0) {
 					gameButtons[randomRecyclable]->resetGameButton();
@@ -198,14 +216,10 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 			}
 			else if ((mousePressed->button == sf::Mouse::Button::Left) && isActionButton(mousePosView, actionButtons))
 			{
-				std::cout << "2" << std::endl;
 				// Correct Action
-				std::cout << gameButtons[randomRecyclable]->getActionType() << ":" 
-					<< getCurrentActionButtonType(mousePosView, actionButtons) << std::endl;
 				if (gameButtons[randomRecyclable]->getActionType() == getCurrentActionButtonType(mousePosView, actionButtons))
 				{
-					std::cout << "3" << std::endl;
-					std::cout << "THIS ITEM WAS PROPERLY ACTIONED" << std::endl;
+					correctPrepSound.play();
 					gameButtons[randomRecyclable]->setNeedsAction(false);
 					gameButtons[randomRecyclable]->setReadyToBin(true);
 					gameButtons[randomRecyclable]->updateTexture();
@@ -213,8 +227,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				// Incorrect Action
 				else 
 				{
-					std::cout << "4" << std::endl;
-					std::cout << "THE INCORRECT ACTION WAS TAKEN ON THIS BUTTON" << std::endl;
+					incorrectChoiceSound.play();
 					playerLives.decrementLives();
 					if (playerLives.getCurrentLives() == 0) 
 					{
@@ -233,8 +246,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 			if ((mousePressed->button == sf::Mouse::Button::Left) && isBinButton(mousePosView, binButtons) 
 				&& gameButtons[randomRecyclable]->getNeedsAction())
 			{
-				std::cout << "5" << std::endl;
-				std::cout << "THIS ITEM NEEDS AN ACTION DONE TO IT BEFORE BEING BINNED" << std::endl;
+				incorrectChoiceSound.play();
 				playerLives.decrementLives();
 				if (playerLives.getCurrentLives() == 0) 
 				{
@@ -253,8 +265,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				// Correct Bin
 				if (gameButtons[randomRecyclable]->getBinType() == getCurrentBinButtonType(mousePosView, binButtons))
 				{
-					std::cout << "7" << std::endl;
-					std::cout << "THIS ITEM WAS PROPERLY BINNED" << std::endl;
+					correctChoiceSound.play();
 					PLAYER_SCORE++;
 					gameButtons[randomRecyclable]->resetGameButton();
 					int curr_rand = randomRecyclable;
@@ -268,8 +279,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				// Incorrect Bin
 				else 
 				{
-					std::cout << "8" << std::endl;
-					std::cout << "THIS ITEM WAS ATTEMPTED TO BE BINNED WHEN NOT READY" << std::endl;
+					incorrectChoiceSound.play();
 					playerLives.decrementLives();
 					if (playerLives.getCurrentLives() == 0) 
 					{
@@ -326,6 +336,33 @@ int main()
 	// Turns mouse position based on currently viewed window into coords for our window. (magic)
 	sf::Vector2f mousePosView = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
+
+	// Sounds
+	// Interface Button Click Sound
+	sf::SoundBuffer interfaceBuffer;
+	loadSound(interfaceBuffer, "Audio/Click_MainMenu.ogg");
+
+	sf::Sound interfaceClickSound(interfaceBuffer);
+
+	// Wrong Choice Sound
+	sf::SoundBuffer incorrectChoiceBuffer;
+	loadSound(incorrectChoiceBuffer, "Audio/Click_Incorrect.ogg");
+
+	sf::Sound incorrectChoiceSound(incorrectChoiceBuffer);
+
+	// Right Choice Sound
+	sf::SoundBuffer correctChoiceBuffer;
+	loadSound(correctChoiceBuffer, "Audio/Click_Correct.ogg");
+
+	sf::Sound correctChoiceSound(correctChoiceBuffer);
+
+	// Correct Prep Sound
+	sf::SoundBuffer correctPrepBuffer;
+	loadSound(correctPrepBuffer, "Audio/Click_CorrectPrep.ogg");
+
+	sf::Sound correctPrepSound(correctPrepBuffer);
+
+	// Fonts
 	// Loading Lobster Font
 	sf::Font gameScoreFont;
 	loadFont(gameScoreFont, "Fonts/Lobster-Regular.ttf");
@@ -334,6 +371,7 @@ int main()
 	sf::Font statsFont;
 	loadFont(statsFont, "Fonts/ScienceGothic-VariableFont_CTRS,slnt,wdth,wght.ttf");
 
+	// Texts
 	// Game Score Text Initialization
 	sf::Text gameScoreText(gameScoreFont);
 	gameScoreText.setString("SCORE: ");
@@ -621,7 +659,7 @@ int main()
 		mousePosView = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 		if (currentGameState == GAME_STATE::MAIN_MENU) 
 		{
-			pollEvents(*window, exitGameButton, newGameButton, mousePosView);
+			pollEvents(*window, exitGameButton, newGameButton, learnRecyclingButton, mousePosView, interfaceClickSound);
 
 			// Render
 			window->clear();
@@ -643,7 +681,8 @@ int main()
 		else if (currentGameState == GAME_STATE::IN_GAME)
 		{
 			//pollEvents(*window, mousePosView);
-			pollGameEvents(*window, mousePosView, actionButtons, binButtons, playerLives, gameObjects);
+			pollGameEvents(*window, mousePosView, actionButtons, binButtons, playerLives, gameObjects, 
+				incorrectChoiceSound, correctChoiceSound, correctPrepSound);
 
 			// Render And Draw Both: Action And Options
 			window->clear();
