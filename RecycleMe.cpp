@@ -298,7 +298,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 	}
 }
 
-void pollScoreScreenEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, Button& mainMenuButton)
+void pollScoreScreenEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, Button& mainMenuButton, sf::Sound& menuSound)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -317,6 +317,7 @@ void pollScoreScreenEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, 
 		{
 			if ((mousePressed->button == sf::Mouse::Button::Left) && mainMenuButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
+				menuSound.play();
 				currentGameState = GAME_STATE::MAIN_MENU;
 			}
 		}
@@ -651,7 +652,7 @@ int main()
 	sf::Texture returnMainMenuHoverTexture;
 	loadTexture(returnMainMenuIdleTexture, "Sprites/RecycleMe_Button_MainMenu_Idle.png");
 	loadTexture(returnMainMenuHoverTexture, "Sprites/RecycleMe_Button_MainMenu_Hover.png");
-	Button returnMainMenuButton(returnMainMenuIdleTexture, returnMainMenuHoverTexture, 800.0f, 125.0f);
+	Button returnMainMenuButton(returnMainMenuIdleTexture, returnMainMenuHoverTexture, 800.0f, 100.0f);
 
 	// Main Game Loop
 	while (window->isOpen()) 
@@ -709,7 +710,7 @@ int main()
 		}
 		else if (currentGameState == GAME_STATE::SCORE_SCREEN) 
 		{
-			pollScoreScreenEvents(*window, mousePosView, returnMainMenuButton);
+			pollScoreScreenEvents(*window, mousePosView, returnMainMenuButton, interfaceClickSound);
 			window->clear();
 
 			// Render
