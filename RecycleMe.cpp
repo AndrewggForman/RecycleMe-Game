@@ -4,6 +4,7 @@
 #include "GameButton.h"
 #include "ActionButton.h"
 #include "BinButton.h"
+#include "Utility.h"
 
 // Standard Library Stuff, Errors, Input/output, strings, time/random functionality
 #include <iostream>
@@ -30,9 +31,10 @@ enum GAME_ITEMS { PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2 };
 
 unsigned int currentGameState = GAME_STATE::MAIN_MENU;
 
-int CURRENT_GAME_ITEM = 0;
+unsigned int CURRENT_GAME_ITEM = 0;
 bool needNewGameItem = true;
-int PLAYER_SCORE = 0;
+unsigned int PLAYER_SCORE = 0;
+unsigned int GAMES_PLAYED = 0;
 
 int randomRecyclable = rand() % 3;
 
@@ -129,7 +131,8 @@ void positionGameSprite(sf::Sprite& sprite, float x, float y)
 
 // POLL EVENTS SECTION
 // HANDLES USER INTERACTION WITH GAME (for the most part)
-void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGameButton, Button& learnGameButton, sf::Vector2f mousePosView, sf::Sound& menuSound) 
+void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGameButton, 
+	Button& learnGameButton, sf::Vector2f mousePosView, sf::Sound& menuSound, std::ofstream& gameScoresFile) 
 {
 	while (const std::optional event = window.pollEvent()) 
 	{
@@ -154,13 +157,15 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 			if ((mousePressed->button == sf::Mouse::Button::Left) && newGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
 				menuSound.play();
+				GAMES_PLAYED++;
+				gameScoresFile << "GAME " << GAMES_PLAYED << " -> SCORE: ";
 				PLAYER_SCORE = 0;
 				currentGameState = GAME_STATE::IN_GAME;
 			}
 			if ((mousePressed->button == sf::Mouse::Button::Left) && learnGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
 				menuSound.play();
-
+				openWebBrowser("https://www.nyc.gov/site/dsny/collection/residents/recycling.page");
 			}
 		}
 	}
@@ -168,7 +173,7 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 
 void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 	ActionButton* actionButtons[4], BinButton* binButtons[4], Hearts& playerLives, GameButton* gameButtons[GAME_ITEMS_COUNT],
-	sf::Sound& incorrectChoiceSound, sf::Sound& correctChoiceSound, sf::Sound& correctPrepSound)
+	sf::Sound& incorrectChoiceSound, sf::Sound& correctChoiceSound, sf::Sound& correctPrepSound, std::ofstream& gameScoresFile)
 {
 	while (const std::optional event = window.pollEvent())
 	{
@@ -206,6 +211,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				incorrectChoiceSound.play();
 				playerLives.decrementLives();
 				if (playerLives.getCurrentLives() == 0) {
+					gameScoresFile << PLAYER_SCORE << std::endl;
 					gameButtons[randomRecyclable]->resetGameButton();
 					playerLives.resetCurrentLives();
 					randomRecyclable = rand() % GAME_ITEMS_COUNT;
@@ -231,6 +237,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					playerLives.decrementLives();
 					if (playerLives.getCurrentLives() == 0) 
 					{
+						gameScoresFile << PLAYER_SCORE << std::endl;
 						gameButtons[randomRecyclable]->resetGameButton();
 						playerLives.resetCurrentLives();
 						randomRecyclable = rand() % GAME_ITEMS_COUNT;
@@ -250,6 +257,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 				playerLives.decrementLives();
 				if (playerLives.getCurrentLives() == 0) 
 				{
+					gameScoresFile << PLAYER_SCORE << std::endl;
 					gameButtons[randomRecyclable]->resetGameButton();
 					playerLives.resetCurrentLives();
 					randomRecyclable = rand() % GAME_ITEMS_COUNT;
@@ -261,7 +269,6 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 			// Handles attempting to bin an object that is ready to be binned
 			else if ((mousePressed->button == sf::Mouse::Button::Left) && (isBinButton(mousePosView, binButtons)))
 			{
-				std::cout << "6" << std::endl;
 				// Correct Bin
 				if (gameButtons[randomRecyclable]->getBinType() == getCurrentBinButtonType(mousePosView, binButtons))
 				{
@@ -273,7 +280,6 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					{
 						randomRecyclable = rand() % GAME_ITEMS_COUNT;
 					}
-					std::cout << "Current player score: " << PLAYER_SCORE << std::endl;
 					playerLives.updateTexture(window);
 				}
 				// Incorrect Bin
@@ -283,6 +289,7 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 					playerLives.decrementLives();
 					if (playerLives.getCurrentLives() == 0) 
 					{
+						gameScoresFile << PLAYER_SCORE << std::endl;
 						gameButtons[randomRecyclable]->resetGameButton();
 						playerLives.resetCurrentLives();
 				
@@ -336,7 +343,6 @@ int main()
 
 	// Turns mouse position based on currently viewed window into coords for our window. (magic)
 	sf::Vector2f mousePosView = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
-
 
 	// Sounds
 	// Interface Button Click Sound
@@ -654,13 +660,21 @@ int main()
 	loadTexture(returnMainMenuHoverTexture, "Sprites/RecycleMe_Button_MainMenu_Hover.png");
 	Button returnMainMenuButton(returnMainMenuIdleTexture, returnMainMenuHoverTexture, 800.0f, 100.0f);
 
+	// File Streams
+	// Output File for Data
+	std::ofstream gameScoresFile("Data/gameScores.txt");
+	if (!(gameScoresFile.is_open()))
+	{
+		throw std::runtime_error("ERROR::COULD NOT LOAD GAME SCORES FILE::gameScores.txt");
+	}
+
 	// Main Game Loop
 	while (window->isOpen()) 
 	{
 		mousePosView = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 		if (currentGameState == GAME_STATE::MAIN_MENU) 
 		{
-			pollEvents(*window, exitGameButton, newGameButton, learnRecyclingButton, mousePosView, interfaceClickSound);
+			pollEvents(*window, exitGameButton, newGameButton, learnRecyclingButton, mousePosView, interfaceClickSound, gameScoresFile);
 
 			// Render
 			window->clear();
@@ -683,7 +697,7 @@ int main()
 		{
 			//pollEvents(*window, mousePosView);
 			pollGameEvents(*window, mousePosView, actionButtons, binButtons, playerLives, gameObjects, 
-				incorrectChoiceSound, correctChoiceSound, correctPrepSound);
+				incorrectChoiceSound, correctChoiceSound, correctPrepSound, gameScoresFile);
 
 			// Render And Draw Both: Action And Options
 			window->clear();
@@ -744,5 +758,6 @@ int main()
 	
 
 	delete window;
+	gameScoresFile.close();
 	return 0;
 }
