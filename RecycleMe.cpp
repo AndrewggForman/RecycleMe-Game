@@ -19,7 +19,7 @@
 #include <SFML/Audio.hpp>
 
 const int MENU_ITEMS_COUNT = 4;
-const int GAME_ITEMS_COUNT = 6;
+const int GAME_ITEMS_COUNT = 8;
 const float ACTIONBUTTONWIDTH = 250.0f;
 const float ACTIONBUTTONHEIGHT = 200.0f;
 unsigned int width = 1600;
@@ -638,9 +638,28 @@ int main()
 		800.0f, 600.0f, false, true, BIN::TRASH, ACTION::NO_ACTION, POSSIBLE_STATES::ONE);
 	GameButton* ptrIceCreamButton = &iceCreamButton;
 
+	// Flimsy Plastic Bag Button
+	sf::Texture flimsyPlasticBagTexture;
+	loadTexture(flimsyPlasticBagTexture, "Sprites/RecycleMe_Trash_FlimsyPlasticBag.png");
+
+	GameButton flimsyPlasticBagButton(flimsyPlasticBagTexture,
+		800.0f, 600.0f, false, true, BIN::TRASH, ACTION::NO_ACTION, POSSIBLE_STATES::ONE);
+	GameButton* ptrFlimsyPlasticBagButton = &flimsyPlasticBagButton;
+
+	// Peanut Butter Button
+	sf::Texture peanutButterIdleTexture;
+	sf::Texture peanutButterHoverTexture;
+	loadTexture(peanutButterIdleTexture, "Sprites/RecycleMe_Plastic_PeanutButter_Dirty.png");
+	loadTexture(peanutButterHoverTexture, "Sprites/RecycleMe_Plastic_PeanutButter_Clean.png");
+
+	GameButton peanutButterButton(peanutButterIdleTexture, peanutButterHoverTexture, 
+		800.0f, 600.0f, true, false, BIN::PLASTIC, ACTION::CLEAN, POSSIBLE_STATES::TWO);
+	GameButton* ptrPeanutButterButton = &peanutButterButton;
+
 	// Array of Pointers to Game Objects
 	GameButton* gameObjects[] = { ptrPlasticColaButton, ptrFragileCardboardBoxButton, 
-		ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton, ptrIceCreamButton};
+		ptrDominosPizzaBoxButton, ptrMasonJarButton, ptrPlasticContainerButton, 
+		ptrIceCreamButton, ptrFlimsyPlasticBagButton, ptrPeanutButterButton };
 
 	// Hearts - aka player's lives
 	sf::Texture threeLives;

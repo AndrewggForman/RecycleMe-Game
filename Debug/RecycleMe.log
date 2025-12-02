@@ -7,6 +7,4 @@ C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\External\includ
       see declaration of 'sf::Exception'
   
 C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\RecycleMe\RecycleMe.cpp(336,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-  Utility.cpp
-  Generating Code...
   RecycleMe.vcxproj -> C:\Users\andre\Desktop\RandomCodeProjects\source\repos\RecycleMe\Debug\RecycleMe.exe
