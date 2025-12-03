@@ -1,2 +1,0 @@
-GAME 1 -> SCORE: 3
-GAME 2 -> SCORE: 1

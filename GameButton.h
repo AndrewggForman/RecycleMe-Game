@@ -62,6 +62,11 @@ class GameButton : public Button
 			return resetAmount;
 		}
 
+		void printErrorMessage() override
+		{
+			std::cout << "Error from GameButton.h" << std::endl;
+		}
+
 		void updateTexture();
 
 		void resetGameButton();

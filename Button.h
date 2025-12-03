@@ -51,6 +51,11 @@ class Button
 			buttonState = state;
 		}
 
+		virtual void printErrorMessage() 
+		{
+			std::cout << "Error from Button.h" << std::endl;
+		}
+
 		void setButtonPosition(float x, float y);
 
 		Button(const Button& otherButton);
