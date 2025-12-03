@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 #ifndef GAME_BUTTON
 #define GAME_BUTTON
 
@@ -14,8 +14,10 @@ class GameButton : public Button
 		int resetAmount;
 
 	public:
-		GameButton(sf::Texture& texture, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType, int resetAmount);
-		GameButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, bool needsAction, bool readyToBin, int binType, int actionType, int resetAmount);
+		GameButton(sf::Texture& texture, float x, float y, bool needsAction, bool readyToBin, 
+			int binType, int actionType, int resetAmount);
+		GameButton(sf::Texture& texture1, sf::Texture& texture2, float x, float y, bool needsAction, bool readyToBin, 
+			int binType, int actionType, int resetAmount);
 		~GameButton();
 
 		void setNeedsAction(bool actionStatus)
@@ -32,7 +34,7 @@ class GameButton : public Button
 		}
 		void setActionType(int actionType)
 		{
-		this->actionType = actionType;
+			this->actionType = actionType;
 		}
 
 		bool getNeedsAction()
@@ -43,11 +45,11 @@ class GameButton : public Button
 		{
 			return readyToBin;
 		}
-		int getBinType()
+		int getBinType() const
 		{
 			return binType;
 		}
-		int getActionType()
+		int getActionType() const
 		{
 			return actionType;
 		}

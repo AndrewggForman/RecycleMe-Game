@@ -96,29 +96,52 @@ void resetGameButton(GameButton& gameButton)
 // Loads a imagae onto a texture object, throws error if fails
 void loadTexture(sf::Texture& texture, std::string filepath)
 {
-	if (!texture.loadFromFile(filepath)) 
+	try
 	{
-		std::string errorString = "ERROR::COULD NOT LOAD TEXTURE FILE::" + filepath;
-		throw std::runtime_error(errorString);
+		if (!texture.loadFromFile(filepath))
+		{
+			std::string errorString = "ERROR::COULD NOT LOAD TEXTURE FILE::" + filepath;
+			throw std::runtime_error(errorString);
+		}
 	}
+	catch (...)
+	{
+		throw std::runtime_error("ERROR::CALLING loadFromFile() CRASHED");
+	}
+
 }
 
 void loadFont(sf::Font& font, std::string filepath)
 {
-	if (!font.openFromFile(filepath))
+	try 
 	{
-		std::string errorString = "ERROR::COULD NOT LOAD FONT FILE::" + filepath;
-		throw std::runtime_error(errorString);
+		if (!font.openFromFile(filepath))
+		{
+			std::string errorString = "ERROR::COULD NOT LOAD FONT FILE::" + filepath;
+			throw std::runtime_error(errorString);
+		}
+	}
+	catch (...)
+	{
+		throw std::runtime_error("ERROR::CALLING openFromFile() CRASHED");
 	}
 }
 
 void loadSound(sf::SoundBuffer& buffer, std::string filepath)
 {
-	if (!buffer.loadFromFile(filepath))
+	try 
 	{
-		std::string errorString = "ERROR::COULD NOT LOAD AUDIO FILE::" + filepath;
-		throw std::runtime_error(errorString);
+		if (!buffer.loadFromFile(filepath))
+		{
+			std::string errorString = "ERROR::COULD NOT LOAD AUDIO FILE::" + filepath;
+			throw std::runtime_error(errorString);
+		}
 	}
+	catch (...)
+	{
+		throw std::runtime_error("ERROR::CALLING loadFromFile() CRASHED");
+	}
+
 }
 
 // Positions gamesprite based on GAME WINDOWS position (as opposed to user's screen)

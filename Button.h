@@ -1,4 +1,4 @@
-#pragma once
+	#pragma once
 #ifndef BUTTON
 #define BUTTON
 
@@ -31,16 +31,17 @@ class Button
 
 		void updateTexture(const sf::RenderWindow& window);
 		
-		sf::Sprite* getSprite() 
+		sf::Sprite* getSprite() const
 		{
 			return sprite;
 		}
 
-		int getCurrButtonID() {
+		int getCurrButtonID() const
+		{
 			return currButtonID;
 		}
 
-		int getButtonState() 
+		int getButtonState() const
 		{
 			return buttonState;
 		}
@@ -54,11 +55,13 @@ class Button
 
 		Button(const Button& otherButton);
 
-		sf::Texture& getIdleTexture() {
+		sf::Texture& getIdleTexture() 
+		{
 			return idleTexture;
 		}
 
-		sf::Texture& getHoverTexture() {
+		sf::Texture& getHoverTexture() 
+		{
 			return hoverTexture;
 		}
 
