@@ -26,7 +26,7 @@ unsigned int width = 1600;
 unsigned int height = 900;
 
 enum BUTTON_STATE { IDLE = 0, HOVER = 1, PRESSED = 2 };
-enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2, SCORE_SCREEN = 3 };
+enum GAME_STATE { MAIN_MENU = 0, IN_GAME = 1, LEARN_MENU = 2, SCORE_SCREEN = 3, TUTORIAL_SCREEN = 4 };
 enum GAME_ITEMS { PLASTIC_COLA = 0, FRAGILE_CARDBOARD = 1, DOMINOS_BOX = 2 };
 
 unsigned int currentGameState = GAME_STATE::MAIN_MENU;
@@ -183,7 +183,7 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 				GAMES_PLAYED++;
 				gameScoresFile << "GAME " << GAMES_PLAYED << " -> SCORE: ";
 				PLAYER_SCORE = 0;
-				currentGameState = GAME_STATE::IN_GAME;
+				currentGameState = GAME_STATE::TUTORIAL_SCREEN;
 			}
 			if ((mousePressed->button == sf::Mouse::Button::Left) && learnGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
 			{
@@ -192,6 +192,33 @@ void pollEvents(sf::RenderWindow& window, Button& exitGameButton, Button& newGam
 			}
 		}
 	}
+}
+
+void pollTutorialEvents(sf::RenderWindow& window, sf::Vector2f mousePosView, Button& startGameButton, sf::Sound& menuSound)
+{
+	while (const std::optional event = window.pollEvent())
+	{
+		if (event->is<sf::Event::Closed>())
+		{
+			window.close();
+		}
+		else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+		{
+			if (keyPressed->scancode == sf::Keyboard::Scancode::Escape)
+			{
+				window.close();
+			}
+		}
+		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
+		{
+			if ((mousePressed->button == sf::Mouse::Button::Left) && startGameButton.getSprite()->getGlobalBounds().contains(mousePosView))
+			{
+				menuSound.play();
+				currentGameState = GAME_STATE::IN_GAME;
+			}
+		}
+	}
+
 }
 
 void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
@@ -216,14 +243,14 @@ void pollGameEvents(sf::RenderWindow& window, sf::Vector2f mousePosView,
 			}
 			// BELOW IS
 			// TESTING ONLY ->
-			if (keyPressed->scancode == sf::Keyboard::Scancode::L)
-			{
-				playerLives.decrementLives();
-			}
-			if (keyPressed->scancode == sf::Keyboard::Scancode::G)
-			{
-				playerLives.incrementLives();
-			}
+			//if (keyPressed->scancode == sf::Keyboard::Scancode::L)
+			//{
+			//	playerLives.decrementLives();
+			//}
+			//if (keyPressed->scancode == sf::Keyboard::Scancode::G)
+			//{
+			//	playerLives.incrementLives();
+			//}
 		}
 		else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
 		{
@@ -506,6 +533,21 @@ int main()
 
 	Button exitGameButton(exitGameIdleTexture, exitGameHoverTexture, 800.0f, 750.0f);
 
+	// Tutorial Menu
+	// How To PLay Text
+	sf::Texture learnToPlayTexture;
+	loadTexture(learnToPlayTexture, "Sprites/RecycleMe_HowToPlay_Text.png");
+
+	Button learnToPlayButton(learnToPlayTexture, 800.0f, 350.0f);
+
+	// Start Button
+	sf::Texture startGameIdleTexture;
+	loadTexture(startGameIdleTexture, "Sprites/RecycleMe_Button_Start_Idle.png");
+	sf::Texture startGameHoverTexture;
+	loadTexture(startGameHoverTexture, "Sprites/RecycleMe_Button_Start_Hover.png");
+
+	Button startGameButton(startGameIdleTexture, startGameHoverTexture, 800.0f, 650.0f);
+
 	// In Game Menu 
 	// Action Buttons
 	// Clean Item Button
@@ -631,7 +673,6 @@ int main()
 	GameButton dominosPizzaBoxButton(dominosPizzaBoxIdleTexture, 
 		800.0f, 600.0f, false, true, BIN::TRASH, ACTION::NO_ACTION, POSSIBLE_STATES::ONE);
 	GameButton* ptrDominosPizzaBoxButton = &dominosPizzaBoxButton;
-
 
 	// Mason Jar Button
 	sf::Texture masonJarIdleTexture;
@@ -789,6 +830,22 @@ int main()
 			window->draw(cleanAlgaeText);
 			window->draw(happyTurtlesText);
 
+			window->display();
+		} 
+		else if (currentGameState == GAME_STATE::TUTORIAL_SCREEN) 
+		{
+
+			//Poll tutorial screen events
+			pollTutorialEvents(*window, mousePosView, startGameButton, interfaceClickSound);
+			window->clear();
+
+			// Render
+			/*learnToPlayButton.updateTexture(*window);*/
+			startGameButton.updateTexture(*window);
+
+			// Draw
+			window->draw(*startGameButton.getSprite());
+			window->draw(*learnToPlayButton.getSprite());
 			window->display();
 		}
 		else
